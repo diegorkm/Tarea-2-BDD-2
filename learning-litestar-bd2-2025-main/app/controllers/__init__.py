@@ -6,6 +6,7 @@ from advanced_alchemy.exceptions import DuplicateKeyError, NotFoundError
 from litestar import Request, Response
 
 
+
 def not_found_error_handler(_: Request[Any, Any, Any], __: NotFoundError) -> Response[Any]:
     """Handle not found errors."""
     return Response(
