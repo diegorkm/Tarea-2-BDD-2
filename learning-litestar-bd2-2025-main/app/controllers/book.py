@@ -45,13 +45,33 @@ class BookController(Controller):
         books_repo: BookRepository,
     ) -> Book:
         """Create a new book."""
+        book_data = data.as_builtins()
+
         # Validar que el año esté entre 1000 y el año actual
-        if not (1000 <= data.as_builtins()["published_year"] <= 2024):
+        if not (1000 <= book_data["published_year"] <= 2024):
             raise HTTPException(
                 detail="El año de publicación debe estar entre 1000 y 2024",
                 status_code=400,
             )
+
+        # Validar que el stock sea > 0 (si no viene, usamos el default 1)
+        stock = book_data.get("stock", 1)
+        if stock <= 0:
+            raise HTTPException(
+                detail="El stock debe ser mayor que 0",
+                status_code=400,
+            )
+
+        # Validar que language tenga 2 letras (ISO 639-1)
+        language = book_data.get("language")
+        if language is None or len(language) != 2:
+            raise HTTPException(
+                detail="El language debe ser un código ISO 639-1 de 2 letras (ej: 'es', 'en')",
+                status_code=400,
+            )
+
         return books_repo.add(data.create_instance())
+
 
     @patch("/{id:int}", dto=BookUpdateDTO)
     async def update_book(
@@ -61,9 +81,32 @@ class BookController(Controller):
         books_repo: BookRepository,
     ) -> Book:
         """Update a book by ID."""
-        book, _ = books_repo.get_and_update(match_fields="id", id=id, **data.as_builtins())
+        update_data = data.as_builtins()
+
+        # Validar que el stock no sea negativo
+        if "stock" in update_data and update_data["stock"] is not None:
+            if update_data["stock"] < 0:
+                raise HTTPException(
+                    detail="El stock no puede ser negativo",
+                    status_code=400,
+                )
+
+        # Validar que language tenga 2 letras
+        if "language" in update_data and update_data["language"] is not None:
+            if len(update_data["language"]) != 2:
+                raise HTTPException(
+                    detail="El language debe ser un código ISO 639-1 de 2 letras (ej: 'es', 'en')",
+                    status_code=400,
+                )
+
+        book, _ = books_repo.get_and_update(
+            match_fields="id",
+            id=id,
+            **update_data,
+        )
 
         return book
+
 
     @delete("/{id:int}")
     async def delete_book(self, id: int, books_repo: BookRepository) -> None:

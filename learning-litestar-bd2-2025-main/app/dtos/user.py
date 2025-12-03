@@ -8,14 +8,15 @@ from app.models import User
 class UserReadDTO(SQLAlchemyDTO[User]):
     """DTO for reading user data without password."""
 
-    config = SQLAlchemyDTOConfig(exclude={"admin"})
+    config = SQLAlchemyDTOConfig(exclude={"admin", "password", "loans"},
+    )
 
 
 class UserCreateDTO(SQLAlchemyDTO[User]):
     """DTO for creating users."""
 
     config = SQLAlchemyDTOConfig(
-        exclude={"id", "created_at", "updated_at", "loans"},
+        exclude={"id", "created_at", "updated_at", "loans", "is_active"},
     )
 
 
@@ -23,7 +24,7 @@ class UserUpdateDTO(SQLAlchemyDTO[User]):
     """DTO for updating users with partial data."""
 
     config = SQLAlchemyDTOConfig(
-        exclude={"id", "created_at", "password", "loans"},
+        exclude={"id", "created_at", "updated_at", "loans", "is_active"},
         partial=True,
     )
 
@@ -31,4 +32,5 @@ class UserUpdateDTO(SQLAlchemyDTO[User]):
 class UserLoginDTO(SQLAlchemyDTO[User]):
     """DTO for user login."""
 
-    config = SQLAlchemyDTOConfig(include={"username", "password"})
+    config = SQLAlchemyDTOConfig(include={"username", "password"},
+    )
