@@ -9,8 +9,10 @@ from litestar.dto import DTOData
 
 from app.controllers import duplicate_error_handler, not_found_error_handler
 from app.dtos.loan import LoanCreateDTO, LoanReadDTO, LoanUpdateDTO
-from app.models import Loan
+from app.models import Loan, LoanStatus
 from app.repositories.loan import LoanRepository, provide_loan_repo
+
+from datetime import datetime, timedelta
 
 
 class LoanController(Controller):
@@ -43,7 +45,21 @@ class LoanController(Controller):
     ) -> Loan:
         """Create a new loan."""
 
-        return loans_repo.add(data.create_instance())
+        loan = data.create_instance()
+
+        # Asegurar loan_dt
+        if loan.loan_dt is None:
+            loan.loan_dt = datetime.today().date()
+
+        # due_date = loan_dt + 14 días
+        loan.due_date = loan.loan_dt + timedelta(days=14)
+
+        # Status por defecto
+        loan.status = LoanStatus.ACTIVE
+
+        # fine_amount se deja en None al inicio
+        return loans_repo.add(loan)
+
 
     @patch("/{id:int}", dto=LoanUpdateDTO)
     async def update_loan(
@@ -53,9 +69,23 @@ class LoanController(Controller):
         loans_repo: LoanRepository,
     ) -> Loan:
         """Update a loan by ID."""
-        loan, _ = loans_repo.get_and_update(match_fields="id", id=id, **data.as_builtins())
 
+        update_data = data.as_builtins()
+
+        # asegurarr que solo venga status
+        allowed_keys = {"status"}
+        extra_keys = set(update_data.keys()) - allowed_keys
+        for key in extra_keys:
+            update_data.pop(key, None)
+
+        loan, _ = loans_repo.get_and_update(
+            match_fields="id",
+            id=id,
+            **update_data,
+        )
         return loan
+
+
 
     @delete("/{id:int}")
     async def delete_loan(self, id: int, loans_repo: LoanRepository) -> None:

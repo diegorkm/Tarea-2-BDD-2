@@ -72,7 +72,6 @@ class BookController(Controller):
 
         return books_repo.add(data.create_instance())
 
-
     @patch("/{id:int}", dto=BookUpdateDTO)
     async def update_book(
         self,
@@ -106,7 +105,6 @@ class BookController(Controller):
         )
 
         return book
-
 
     @delete("/{id:int}")
     async def delete_book(self, id: int, books_repo: BookRepository) -> None:
@@ -171,3 +169,57 @@ class BookController(Controller):
             oldest_publication_year=oldest_year,
             newest_publication_year=newest_year,
         )
+
+
+    @get("/available")
+    async def get_available_books(
+        self,
+        books_repo: BookRepository,
+    ) -> Sequence[Book]:
+        """Retornar libros con stock > 0."""
+        return books_repo.get_available_books()
+
+    @get("/by-category/{category_id:int}")
+    async def get_books_by_category(
+        self,
+        category_id: int,
+        books_repo: BookRepository,
+    ) -> Sequence[Book]:
+        """Buscar libros de una categoría específica."""
+        return books_repo.find_by_category(category_id)
+
+    @get("/most-reviewed")
+    async def get_most_reviewed_books(
+        self,
+        books_repo: BookRepository,
+        limit: Annotated[int, Parameter(query="limit", default=10, ge=1)],
+    ) -> Sequence[Book]:
+        """Libros ordenados por cantidad de reseñas (desc)."""
+        return books_repo.get_most_reviewed_books(limit=limit)
+
+    @patch("/{book_id:int}/stock")
+    async def update_book_stock(
+        self,
+        book_id: int,
+        quantity: int,
+        books_repo: BookRepository,
+    ) -> Book:
+        """
+        Actualizar stock de un libro.
+        """
+        try:
+            return books_repo.update_stock(book_id, quantity)
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail=str(exc),
+            )
+
+    @get("/search-by-author")
+    async def search_books_by_author(
+        self,
+        author_name: str,
+        books_repo: BookRepository,
+    ) -> Sequence[Book]:
+        """Buscar libros por nombre de autor (búsqueda parcial, ilike)."""
+        return books_repo.search_by_author(author_name)

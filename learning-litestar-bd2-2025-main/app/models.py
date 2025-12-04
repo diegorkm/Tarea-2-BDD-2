@@ -2,9 +2,11 @@
 
 from dataclasses import dataclass
 from datetime import date, datetime
+from decimal import Decimal
+from enum import Enum as PyEnum
 
 from advanced_alchemy.base import BigIntAuditBase
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, Enum as SAEnum, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 
@@ -17,14 +19,13 @@ class User(BigIntAuditBase):
     fullname: Mapped[str]
     password: Mapped[str]
 
-    loans: Mapped[list["Loan"]] = relationship(back_populates="user")
-    reviews: Mapped[list["Review"]] = relationship(back_populates="user")
-
     email: Mapped[str] = mapped_column(unique=True)
     phone: Mapped[str | None]
     address: Mapped[str | None]
     is_active: Mapped[bool] = mapped_column(default=True)
 
+    loans: Mapped[list["Loan"]] = relationship(back_populates="user")
+    reviews: Mapped[list["Review"]] = relationship(back_populates="user")
 
 
 class Book(BigIntAuditBase):
@@ -38,15 +39,20 @@ class Book(BigIntAuditBase):
     pages: Mapped[int]
     published_year: Mapped[int]
 
-    loans: Mapped[list["Loan"]] = relationship(back_populates="book")
-    categories: Mapped[list["BookCategory"]] = relationship(back_populates="book")
-    reviews: Mapped[list["Review"]] = relationship(back_populates="book")
-
     stock: Mapped[int] = mapped_column(default=1)
     description: Mapped[str | None]
     language: Mapped[str]
     publisher: Mapped[str | None]
 
+    loans: Mapped[list["Loan"]] = relationship(back_populates="book")
+    categories: Mapped[list["BookCategory"]] = relationship(back_populates="book")
+    reviews: Mapped[list["Review"]] = relationship(back_populates="book")
+
+
+class LoanStatus(PyEnum):
+    ACTIVE = "ACTIVE"
+    RETURNED = "RETURNED"
+    OVERDUE = "OVERDUE"
 
 
 class Loan(BigIntAuditBase):
@@ -59,8 +65,19 @@ class Loan(BigIntAuditBase):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     book_id: Mapped[int] = mapped_column(ForeignKey("books.id"))
 
-    user: Mapped[User] = relationship(back_populates="loans")
-    book: Mapped[Book] = relationship(back_populates="loans")
+    due_date: Mapped[date]
+    fine_amount: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
+    status: Mapped[LoanStatus] = mapped_column(
+        SAEnum(
+            LoanStatus,
+            native_enum=False,
+            length=8,
+        ),
+        default=LoanStatus.ACTIVE,
+    )
+
+    user: Mapped["User"] = relationship(back_populates="loans")
+    book: Mapped["Book"] = relationship(back_populates="loans")
 
 
 class Category(BigIntAuditBase):
