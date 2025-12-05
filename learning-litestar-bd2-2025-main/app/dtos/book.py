@@ -4,6 +4,10 @@ from advanced_alchemy.extensions.litestar import SQLAlchemyDTO, SQLAlchemyDTOCon
 
 from app.models import Book
 
+#importaciones obtenidas por chatgpt para solucionar errores mios
+from typing import Optional, List
+from pydantic import BaseModel
+
 
 class BookReadDTO(SQLAlchemyDTO[Book]):
     """DTO for reading book data."""
@@ -11,12 +15,21 @@ class BookReadDTO(SQLAlchemyDTO[Book]):
     config = SQLAlchemyDTOConfig()
 
 
-class BookCreateDTO(SQLAlchemyDTO[Book]):
-    """DTO for creating books."""
+class CategoryInput(BaseModel):
+    category_id: int
 
+class BookCreateDTO(SQLAlchemyDTO[Book]):
     config = SQLAlchemyDTOConfig(
-        exclude={"id", "created_at", "updated_at", "loans"},
+        exclude={
+            "id",
+            "created_at",
+            "updated_at",
+            "loans",
+            "reviews",
+            "categories",
+        }
     )
+    categories: Optional[List[CategoryInput]] = None
 
 
 class BookUpdateDTO(SQLAlchemyDTO[Book]):

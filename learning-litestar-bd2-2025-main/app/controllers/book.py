@@ -12,9 +12,8 @@ from litestar.params import Parameter
 
 from app.controllers import duplicate_error_handler, not_found_error_handler
 from app.dtos.book import BookCreateDTO, BookReadDTO, BookUpdateDTO
-from app.models import Book, BookStats
+from app.models import Book, BookStats, BookCategory
 from app.repositories.book import BookRepository, provide_book_repo
-
 
 class BookController(Controller):
     """Controller for book management operations."""
@@ -46,6 +45,7 @@ class BookController(Controller):
     ) -> Book:
         """Create a new book."""
         book_data = data.as_builtins()
+        category_items = book_data.pop("categories", [])
 
         # Validar que el año esté entre 1000 y el año actual
         if not (1000 <= book_data["published_year"] <= 2024):
@@ -70,7 +70,18 @@ class BookController(Controller):
                 status_code=400,
             )
 
-        return books_repo.add(data.create_instance())
+        # Crear el libro
+        book = books_repo.add(data.create_instance())
+
+        # Asociar categorías al libro
+        for item in category_items:
+            books_repo.session.add(
+                BookCategory(book_id=book.id, category_id=item["category_id"])
+            )
+
+        books_repo.session.commit()
+
+        return book
 
     @patch("/{id:int}", dto=BookUpdateDTO)
     async def update_book(

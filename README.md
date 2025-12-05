@@ -7,6 +7,7 @@
 - Se implementó `CategoryController` con operaciones CRUD.
 - Se agregaron sus respectivos DTOs y repositorio.
 - Se requirió asistencia de chatgpt para aprender a manejarme con el orden de las carpetas.
+- Se requirió asistencia de chatgpt para solucionar problemas de ultimo momento al intentar realizar requerimiento 8 (se solventó pero ahora no puedo crear libros con categorías, por lo cual se modifica tabla para dejar en parcial)
 
 ### 2. Reseñas (Review)
 - Se creó el modelo `Review` con relaciones hacia `User` y `Book`.
@@ -18,7 +19,7 @@
 - Validaciones:
   - `stock > 0` al crear.
   - `stock` no puede quedar negativo al actualizar.
-  - `language` debe ser un código ISO 639-1 de 2 letras.
+  - `language` debe ser un código de 2 letras.
 - Se agregaron métodos avanzados en el repositorio y endpoints.
 
 ### 4. Usuarios (User)
@@ -49,9 +50,11 @@ Y se agregaron sus endpoints correspondientes en `BookController`.
 
 | # | Requerimiento                                                                                         | Estado    |
 |---|--------------------------------------------------------------------------------------------------------|-----------|
-| 1 | Category + tabla intermedia + CRUD + DTOs                                                             | Cumplido  |
-| 2 | Review + relaciones + CRUD + validación rating                                                        | Cumplido  |
+| 1 | Category + tabla intermedia + CRUD + DTOs                                                             | Parcial  |
+| 2 | Review + relaciones + CRUD + validación rating                                                        | Cumplido creo  |
 | 3 | Nuevos campos en Book + validaciones + migración                                                      | Cumplido  |
 | 4 | Nuevos campos en User + email validado + is_active protegido                                          | Cumplido  |
 | 5 | Nuevos campos en Loan + enum + due_date automático + DTOs                                             | Cumplido  |
 | 6 | Nuevos métodos en BookRepository + endpoints en BookController                                        | Cumplido  |
+| 7 | Implementación de métodos en LoanRepository                                                        | No cumplido  |
+| 8 | Creación de cosas en la base de datos                                                               | No cumplido  |
