@@ -46,6 +46,9 @@ Se implementaron nuevos métodos:
 
 Y se agregaron sus endpoints correspondientes en `BookController`.
 
+### 7 y 8
+Se intentó realizar estos requerimientos pero mi cerebro ya no dio más y cuando intente rellenar la base de datos tuve ciertos problemas con la categoria como añadí al inicio del readme por lo cual decidí dejarlo ser.
+
 ## Tabla de cumplimiento de requerimientos
 
 | # | Requerimiento                                                                                         | Estado    |
